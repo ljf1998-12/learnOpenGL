@@ -5,19 +5,20 @@
 #include <GLFW/glfw3.h>
 #include"MyError.h"
 
+static void error_callback(int error, const char *description){
+	fprintf(stderr, "Error: %s\n", description);
+}
+
 class MyGlfw{
-private:
-
 public:
-MyGlfw(){
-    glfwSetErrorCallback(error_callback);
-    if(!glfwInit()){
-		my_print_error("glfwInit");
-		return -1;
-	}
+MyGlfw(const int width=800, const int hight=600):scrWidth{width},scrHight{hight}{
 }
-bool init
+bool init();
 
-}
+private:
+	GLFWwindow *pwindow;
+	const int scrWidth;
+	const int scrHight;
+};
 
 #endif

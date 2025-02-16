@@ -15,11 +15,11 @@ int main(void) {
     GLFWwindow* window = glfwCreateWindow(600, 600, "Chapter2 - program1", NULL, NULL);
     glfwMakeContextCurrent(window);
     if (glewInit() != GLEW_OK) { exit(EXIT_FAILURE); }
-    glfwSwapInterval(1);
+    glfwSwapInterval(1); 
     int i = 0;
-    while(!glfwWindowShouldClose(window) && i<=0){
+    if(!glfwWindowShouldClose(window) && i<=1){
         my_display(window);
-        //glfwSwapBuffers(window);
+        glfwSwapBuffers(window);
         ++i;
     }
     while (!glfwWindowShouldClose(window)) {
