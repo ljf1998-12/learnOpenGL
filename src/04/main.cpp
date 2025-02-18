@@ -9,10 +9,12 @@ GLuint renderingProgram;
 GLuint vao[numVAOs];
 
 GLuint createShaderProgram() {
+    //顶点着色
     const char *vshaderSource =
         "#version 430 \n"
         "void main(void) \n"
         "{ gl_Position = vec4(0.0, 0.0, 0.0, 1.0); }";
+    //片段着色
     const char *fshaderSource =
         "#version 430 \n"
         "out vec4 color; \n"
@@ -28,6 +30,7 @@ GLuint createShaderProgram() {
     glAttachShader(vfProgram, vShader);
     glAttachShader(vfProgram, fShader);
     glLinkProgram(vfProgram);
+    cout << "vfProgram: " << vfProgram << endl;
     return vfProgram;
 }
 void init(GLFWwindow* window) {
