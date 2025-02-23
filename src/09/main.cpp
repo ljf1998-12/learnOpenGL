@@ -56,7 +56,7 @@ int main(){
     //清空缓冲区
     glClear(GL_COLOR_BUFFER_BIT);
     glUseProgram(renderingProgram);
-    glPointSize(30.0f); //设置点的大小
+    glPointSize(30.0f); //设置点的大小为30
     glDrawArrays(GL_POINTS, 0, 1);
     //交换缓冲区
     glfwSwapBuffers(window);
@@ -94,7 +94,7 @@ GLuint createShadersProgram() {
         "#version 430 \n"
         "out vec4 color; \n"
         "void main(void) \n"
-        "{ color = vec4(0.0, 0.0, 1.0, 1.0); }";
+        "{ if (gl_FragCoord.x < 400) color = vec4(0.0, 1.0, 0.0, 1.0); else color = vec4(0.0, 0.0, 1.0, 1.0);}";
     GLuint vfProgram = glCreateProgram();
     createShader(&vshaderSource,GL_VERTEX_SHADER,vfProgram);
     createShader(&fshaderSource,GL_FRAGMENT_SHADER,vfProgram);
