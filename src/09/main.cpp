@@ -1,4 +1,7 @@
 #include <iostream>
+#include <vector>
+#include <fstream>
+#include <sstream>
 #include <glad/glad.h> //先包含glad, 后包含glfw
 #include <GLFW/glfw3.h>
 using namespace std;
@@ -12,12 +15,13 @@ GLuint vao[numVAOs];
 GLuint SCR_WIDTH = 800;
 GLuint SCR_HEIGHT = 600;
 
-void init(GLFWwindow* window);
-void createShader(const GLchar **string, GLenum shaderType,GLuint vfProgram);
+bool init(GLFWwindow* window);
+bool addShader(const string &shader_path, GLenum shaderType,GLuint vfProgram);
 GLuint createShadersProgram(void);
 static void my_print_error(const string &s_err);
 static void error_callback(int error, const char *description);
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+static bool read_shader_file(const string &shader_path, string &str_content);
 
 int main(){
     //设置glfw错误回调
@@ -44,24 +48,27 @@ int main(){
     //加载glad
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {//加载glad
 		std::cout << "Failed to initialize GLAD" << std::endl;
+        glfwTerminate();
 		return -1;
 	}
     //设置GLFW按键回调
     glfwSetKeyCallback(window, key_callback); 
     //设置缓冲区交换机制
     glfwSwapInterval(1); 
-    init(window); 
-    //设置OpenGL默认缓冲底色
-    glClearColor(1.0, 0.0, 0.0, 1.0);
-    //清空缓冲区
-    glClear(GL_COLOR_BUFFER_BIT);
-    glUseProgram(renderingProgram);
-    glPointSize(30.0f); //设置点的大小为30
-    glDrawArrays(GL_POINTS, 0, 1);
-    //交换缓冲区
-    glfwSwapBuffers(window);
+    if(init(window)){
+        //设置OpenGL默认缓冲底色
+        glClearColor(1.0, 0.0, 0.0, 1.0);
+        //清空缓冲区
+        glClear(GL_COLOR_BUFFER_BIT);
+        glUseProgram(renderingProgram);
+        glPointSize(30.0f); //设置点的大小为30
+        glDrawArrays(GL_POINTS, 0, 1);
+        //交换缓冲区
+        glfwSwapBuffers(window);
+    }
     while (!glfwWindowShouldClose(window)){
         //处理屏幕事件
+        cout << "glfwPollEvents" << endl;
         glfwPollEvents();
     }
     //关闭窗口
@@ -71,33 +78,44 @@ int main(){
     //程序退出
     exit(EXIT_SUCCESS);
 }
-void init(GLFWwindow* window) {
+bool init(GLFWwindow* window) {
     //创建渲染程序并获取其标识符
     renderingProgram = createShadersProgram();
+    if(false == renderingProgram){
+        my_print_error("createShadersProgram");
+        return false;
+    }
     //创建顶点标识符数组
     glGenVertexArrays(numVAOs, vao);
     glBindVertexArray(vao[0]);
+    return true;
 }
-void createShader(const GLchar **string, GLenum shaderType,GLuint vfProgram) {
-    GLuint my_shader = glCreateShader(shaderType);
-    glShaderSource(my_shader, 1, string, NULL);
-    glCompileShader(my_shader);
-    glAttachShader(vfProgram, my_shader);
+bool addShader(const string &shader_path, GLenum shaderType,GLuint vfProgram) {
+    string svshaderSource;
+    if(!read_shader_file(shader_path,svshaderSource)){
+        my_print_error("read_shader_file"+shader_path);
+        return false;
+    }
+    cout << svshaderSource << endl;
+    const char *vshaderSource = svshaderSource.c_str();
+    GLuint shaderRefNum = glCreateShader(shaderType);
+    glShaderSource(shaderRefNum, 1, &vshaderSource, NULL);
+    glCompileShader(shaderRefNum);
+    glAttachShader(vfProgram, shaderRefNum);
+    return true;
 }   
 GLuint createShadersProgram() {
-    //顶点着色
-    const char *vshaderSource =
-    "#version 430 \n"
-    "void main(void) \n"
-    "{ gl_Position = vec4(0.0, 0.0, 0.0, 1.0); }";
-    const char *fshaderSource =
-        "#version 430 \n"
-        "out vec4 color; \n"
-        "void main(void) \n"
-        "{ if (gl_FragCoord.x < 400) color = vec4(0.0, 1.0, 0.0, 1.0); else color = vec4(0.0, 0.0, 1.0, 1.0);}";
     GLuint vfProgram = glCreateProgram();
-    createShader(&vshaderSource,GL_VERTEX_SHADER,vfProgram);
-    createShader(&fshaderSource,GL_FRAGMENT_SHADER,vfProgram);
+    const string vshader_path("D:\\OneDrive\\图片\\learnopengl\\src\\09\\vshaderSource.glsl");
+    const string fshader_path("D:\\OneDrive\\图片\\learnopengl\\src\\09\\fshaderSource.glsl");
+    if(!addShader(vshader_path,GL_VERTEX_SHADER,vfProgram)){
+        my_print_error("addShader");
+        return false;
+    }
+    if(!addShader(fshader_path,GL_FRAGMENT_SHADER,vfProgram)){
+        my_print_error("addShader");
+        return false;
+    }
     glLinkProgram(vfProgram);
     cout << "vfProgram: " << vfProgram << endl;
     return vfProgram;
@@ -115,3 +133,16 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
+bool read_shader_file(const string &shader_path, string &str_content){
+    str_content.clear();
+    string str_line;
+    ifstream istrm(shader_path, ios::in);
+    if(istrm.is_open()){
+        return false;
+    }
+    while(!istrm.eof()){
+        getline(istrm, str_line);
+        str_content.append(str_line+'\n');
+    }
+    return true;
+} 
