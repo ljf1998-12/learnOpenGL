@@ -2,6 +2,7 @@
 #include <glad/glad.h> //先包含glad, 后包含glfw
 #include <GLFW/glfw3.h>
 #include"my_log.h"
+#include"myglfw.h"
 
 using namespace std;
 //渲染程序标识
@@ -26,10 +27,12 @@ int main(){
     //设置glfw错误回调
     glfwSetErrorCallback(error_callback);
     //glfw初始化
-	if(!glfwInit()){
-		LOG_ERR("glfwInit");
+    myglfw my_glfw;
+	if(!my_glfw.init()){
+		LOG_ERR("my_glfw.init");
 		return -1;
 	}
+    LOG_INFO("my_glfw.init");
     //设置OpenGL上下文版本和模式
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); //设置opengl主版本
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); //设置opengl次版本
@@ -39,7 +42,6 @@ int main(){
 	if (window == NULL)
 	{
 		LOG_ERR("glfwCreateWindow");
-		glfwTerminate();
 		return -1;
 	}
     //设为当前上下文
@@ -47,7 +49,6 @@ int main(){
     //加载glad
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {//加载glad
 		LOG_ERR("gladLoadGLLoader");
-		return -1;
 	}
     //设置GLFW按键回调
     glfwSetKeyCallback(window, key_callback); 
@@ -71,10 +72,8 @@ int main(){
     }
     //关闭窗口
     glfwDestroyWindow(window);
-    //终止glfw
-    glfwTerminate();
     //程序退出
-    exit(EXIT_SUCCESS);
+    return 0;
 }
 bool init(GLFWwindow* window) {
     //创建渲染程序并获取其标识符
