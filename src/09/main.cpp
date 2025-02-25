@@ -14,22 +14,20 @@ GLuint vao[numVAOs];
 GLuint SCR_WIDTH = 800;
 GLuint SCR_HEIGHT = 600;
 
-void init(GLFWwindow* window);
+bool init(GLFWwindow* window);
 void createShader(const GLchar **string, GLenum shaderType,GLuint vfProgram);
 GLuint createShadersProgram(void);
-static void my_print_error(const string &s_err);
 static void error_callback(int error, const char *description);
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 
 int main(){
-    LOG_ERR("Enter main");
     LOG_INFO("Enter main");
     //设置glfw错误回调
     glfwSetErrorCallback(error_callback);
     //glfw初始化
 	if(!glfwInit()){
-		my_print_error("glfwInit");
+		LOG_ERR("glfwInit");
 		return -1;
 	}
     //设置OpenGL上下文版本和模式
@@ -40,7 +38,7 @@ int main(){
 	GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL); 
 	if (window == NULL)
 	{
-		my_print_error("glfwCreateWindow");
+		LOG_ERR("glfwCreateWindow");
 		glfwTerminate();
 		return -1;
 	}
@@ -48,14 +46,16 @@ int main(){
     glfwMakeContextCurrent(window); 
     //加载glad
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {//加载glad
-		std::cout << "Failed to initialize GLAD" << std::endl;
+		LOG_ERR("gladLoadGLLoader");
 		return -1;
 	}
     //设置GLFW按键回调
     glfwSetKeyCallback(window, key_callback); 
     //设置缓冲区交换机制
     glfwSwapInterval(1); 
-    init(window); 
+    if(!init(window)){
+        LOG_ERR("gladLoadGLLoader");
+    }
     //设置OpenGL默认缓冲底色
     glClearColor(1.0, 0.0, 0.0, 1.0);
     //清空缓冲区
@@ -76,12 +76,13 @@ int main(){
     //程序退出
     exit(EXIT_SUCCESS);
 }
-void init(GLFWwindow* window) {
+bool init(GLFWwindow* window) {
     //创建渲染程序并获取其标识符
     renderingProgram = createShadersProgram();
     //创建顶点标识符数组
     glGenVertexArrays(numVAOs, vao);
     glBindVertexArray(vao[0]);
+    return true;
 }
 void createShader(const GLchar **string, GLenum shaderType,GLuint vfProgram) {
     GLuint my_shader = glCreateShader(shaderType);
@@ -106,10 +107,6 @@ GLuint createShadersProgram() {
     glLinkProgram(vfProgram);
     cout << "vfProgram: " << vfProgram << endl;
     return vfProgram;
-}
-//输出错误信息
-void my_print_error(const string &s_err){
-	cerr << "ERR:" << s_err << endl;
 }
 //glfw错误回调
 void error_callback(int error, const char *description){
