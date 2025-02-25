@@ -1,6 +1,8 @@
 #include <iostream>
 #include <glad/glad.h> //先包含glad, 后包含glfw
 #include <GLFW/glfw3.h>
+#include"my_log.h"
+
 using namespace std;
 //渲染程序标识
 static GLuint renderingProgram;
@@ -19,7 +21,10 @@ static void my_print_error(const string &s_err);
 static void error_callback(int error, const char *description);
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
+
 int main(){
+    LOG_ERR("Enter main");
+    LOG_INFO("Enter main");
     //设置glfw错误回调
     glfwSetErrorCallback(error_callback);
     //glfw初始化
