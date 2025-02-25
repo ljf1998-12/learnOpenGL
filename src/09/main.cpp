@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include"my_log.h"
 #include"myglfw.h"
+#include"mywindow.h"
 
 using namespace std;
 //渲染程序标识
@@ -38,10 +39,11 @@ int main(){
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3); //设置opengl次版本
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); //设置OpenGL核心模式
     //创建窗口和上下文
-	GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL); 
+    mywindow my_window;
+	GLFWwindow *window = my_window.create(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL); 
 	if (window == NULL)
 	{
-		LOG_ERR("glfwCreateWindow");
+		LOG_ERR("my_window.create");
 		return -1;
 	}
     //设为当前上下文
@@ -49,6 +51,7 @@ int main(){
     //加载glad
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {//加载glad
 		LOG_ERR("gladLoadGLLoader");
+        return -1;
 	}
     //设置GLFW按键回调
     glfwSetKeyCallback(window, key_callback); 
@@ -56,6 +59,7 @@ int main(){
     glfwSwapInterval(1); 
     if(!init(window)){
         LOG_ERR("gladLoadGLLoader");
+        return -1;
     }
     //设置OpenGL默认缓冲底色
     glClearColor(1.0, 0.0, 0.0, 1.0);
@@ -70,9 +74,8 @@ int main(){
         //处理屏幕事件
         glfwPollEvents();
     }
-    //关闭窗口
-    glfwDestroyWindow(window);
     //程序退出
+    LOG_INFO("return 0");
     return 0;
 }
 bool init(GLFWwindow* window) {
