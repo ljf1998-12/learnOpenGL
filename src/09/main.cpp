@@ -4,6 +4,7 @@
 #include"my_log.h"
 #include"myglfw.h"
 #include"mywindow.h"
+#include"utilities.h"
 
 using namespace std;
 //渲染程序标识
@@ -16,12 +17,8 @@ GLuint vao[numVAOs];
 GLuint SCR_WIDTH = 800;
 GLuint SCR_HEIGHT = 600;
 
-bool init(GLFWwindow* window);
-void createShader(const GLchar **string, GLenum shaderType,GLuint vfProgram);
-GLuint createShadersProgram(void);
 static void error_callback(int error, const char *description);
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-
 
 int main(){
     LOG_INFO("Enter main");
@@ -29,6 +26,7 @@ int main(){
     glfwSetErrorCallback(error_callback);
     //glfw初始化
     myglfw my_glfw;
+
 	if(!my_glfw.init()){
 		LOG_ERR("my_glfw.init");
 		return -1;
@@ -56,11 +54,22 @@ int main(){
     //设置GLFW按键回调
     glfwSetKeyCallback(window, key_callback); 
     //设置缓冲区交换机制
-    glfwSwapInterval(1); 
-    if(!init(window)){
-        LOG_ERR("gladLoadGLLoader");
-        return -1;
+    glfwSwapInterval(1);
+    //创建shader程序 
+    renderingProgram = glCreateProgram();
+    const string vpath = "D:\\OneDrive\\learnopengl\\src\\09\\vshaderSource.glsl";
+    const string fpath = "D:\\OneDrive\\learnopengl\\src\\09\\fshaderSource.glsl";
+    GLuint vref = create_shader(vpath,GL_VERTEX_SHADER);
+    GLuint fref = create_shader(fpath,GL_FRAGMENT_SHADER);
+    if(vref){
+        glAttachShader(renderingProgram,vref);
     }
+    if(fref){
+        glAttachShader(renderingProgram,fref);
+    }
+    glLinkProgram(renderingProgram);
+    glGenVertexArrays(numVAOs, vao);
+    glBindVertexArray(vao[0]);
     //设置OpenGL默认缓冲底色
     glClearColor(1.0, 0.0, 0.0, 1.0);
     //清空缓冲区
@@ -77,39 +86,7 @@ int main(){
     //程序退出
     LOG_INFO("return 0");
     return 0;
-}
-bool init(GLFWwindow* window) {
-    //创建渲染程序并获取其标识符
-    renderingProgram = createShadersProgram();
-    //创建顶点标识符数组
-    glGenVertexArrays(numVAOs, vao);
-    glBindVertexArray(vao[0]);
-    return true;
-}
-void createShader(const GLchar **string, GLenum shaderType,GLuint vfProgram) {
-    GLuint my_shader = glCreateShader(shaderType);
-    glShaderSource(my_shader, 1, string, NULL);
-    glCompileShader(my_shader);
-    glAttachShader(vfProgram, my_shader);
-}   
-GLuint createShadersProgram() {
-    //顶点着色
-    const char *vshaderSource =
-    "#version 430 \n"
-    "void main(void) \n"
-    "{ gl_Position = vec4(0.0, 0.0, 0.0, 1.0); }";
-    const char *fshaderSource =
-        "#version 430 \n"
-        "out vec4 color; \n"
-        "void main(void) \n"
-        "{ if (gl_FragCoord.x < 400) color = vec4(0.0, 1.0, 0.0, 1.0); else color = vec4(0.0, 0.0, 1.0, 1.0);}";
-    GLuint vfProgram = glCreateProgram();
-    createShader(&vshaderSource,GL_VERTEX_SHADER,vfProgram);
-    createShader(&fshaderSource,GL_FRAGMENT_SHADER,vfProgram);
-    glLinkProgram(vfProgram);
-    cout << "vfProgram: " << vfProgram << endl;
-    return vfProgram;
-}
+} 
 //glfw错误回调
 void error_callback(int error, const char *description){
 	fprintf(stderr, "Error: %s\n", description);
